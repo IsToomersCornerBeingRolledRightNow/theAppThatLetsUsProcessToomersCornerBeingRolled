@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Continually grabs frames from $STREAM every $FREQ seconds.
+
 STREAM="rtsp://68.152.51.100/axis-media/media.amp" # source stream
 FREQ="1" # frequency in seconds
 OUT_DIR="./images" # no trailing slash
