@@ -20,6 +20,8 @@ import Vision.Image (Image, ImagePixel, Manifest, MutableManifest, Grey, Derivat
   , create, new', linearRead, linearWrite
   , sobel
   )
+import Data.List(sort,group,sortBy,filter)
+import Data.Ord (comparing, Down(..))
 import Vision.Primitive (Z (..), (:.) (..), inShape, ix2)
 
 data EdgeDirection = NorthSouth         -- ^ |
@@ -41,6 +43,26 @@ data EdgeDirection = NorthSouth         -- ^ |
 --
 -- This function is specialized for 'Grey' images but is declared @INLINABLE@
 -- to be further specialized for new image types.
+type Angle = Int
+
+get_angles :: Grey -> [Int]
+get_angles !img = do
+    x <- [0..(w-1)]
+    y <- [0..(h-1)]
+    let linearIX = y * w + x
+        pdx = dx `linearIndex` linearIX
+        pdy = dy `linearIndex` linearIX
+    if (pdx,pdy) == (0,0) then []
+                          else return . floor $ 100 * atan1 (double pdx) (double pdy)
+  where 
+    size@(Z :. h :. w) = shape img
+    dx = sobel 5 DerivativeX img :: Manifest Int16
+    dy = sobel 5 DerivativeY img :: Manifest Int16
+    atan1 x y = let t = atan2 x y in
+                    if t < 0 
+                       then t + pi
+                       else t
+    pi = 3.14159265358979
 canny_dx ::
       Int
       -- ^ Radius of the Sobel's filter.
@@ -77,10 +99,8 @@ canny_dx !derivSize !lowThres !highThres !img =
     !dxy = fromFunction size $ \pt ->
                   square (fromIntegral $ dx ! pt)
                 + square (fromIntegral $ dy ! pt)
-
     newManifest :: (Storable p, Bounded p) => ST s (MutableManifest p s)
     newManifest = new' size minBound
-
     -- Visits a point and compares its gradient magnitude to the given
     -- threshold, visits neighbor if the point is perceived an an edge.
     visitPoint !img !x !y !linearIX _ = -- return $ dx  `linearIndex` linearIX
@@ -107,7 +127,6 @@ canny_dx !derivSize !lowThres !highThres !img =
             when (ptDxy > thres && isMaximum x y ptDxy direction) $ do
                 linearWrite edges linearIX maxBound
                 visitNeighbour edges x y direction-}
-
     visitNeighbour !edges !x !y !direction = do
         let (!x1, !y1, !x2, !y2) =
                 case direction of
@@ -166,7 +185,7 @@ double = fromIntegral
 -- usage: ./canny input.png output.png
 main :: IO ()
 main = do
-    [input, output] <- getArgs
+    [input] <- getArgs
 
     -- Loads the image. Automatically infers the format.
     io <- load Autodetect input
@@ -184,12 +203,17 @@ main = do
                 -- Applies the Canny's algorithm with a 5x5 Sobel kernel (radius
                 -- = 2).
                 edges = canny 2 256 1024 blurred
-                dx = canny_dx 2 256 1024 blurred
+                hist xs = sortBy (comparing (Down . snd)) . fmap (\x -> (head x, length x)) . group . sort $ xs
+                good x = abs (x - 157) < 10
+            print . length . filter good . get_angles $ edges
+            --    thetas = get_angles edges
+            --print "aaa"
+            --print . length $ thetas
             -- Saves the edges image. Automatically infers the output format.
-            mErr <- save Autodetect output dx
-            case mErr of
+            --mErr <- save Autodetect output1 edges
+            {-case mErr of
                 Nothing  ->
                     putStrLn "Success."
                 Just err -> do
                     putStrLn "Unable to save the image:"
-                    print err
+                    print err-}
