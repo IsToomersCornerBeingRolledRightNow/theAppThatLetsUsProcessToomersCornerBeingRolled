@@ -2,16 +2,10 @@
 
 # Grabs $GRABS frames, one per $FREQ seconds, from $STREAM.
 
-STREAM="rtsp://68.152.51.100/axis-media/media.amp" # source stream
-GRABS="1" # number of frames to grab
-FREQ="1" # frequency in seconds
-OUT_DIR="./images" # no trailing slash
+myStream="$1" # the raw video stream
+myImage="$2" # the name of the output file
+myGrabs="1" # number of frames to grab
+myFreq="1" # frequency in seconds
 
-TIME=$(date +%s) # gets the system time in seconds
-
-if [ ! -d $OUT_DIR ]; then
-	mkdir $OUT_DIR
-fi
-
-avconv -i $STREAM -t $GRABS -r $FREQ -vsync 1 -qscale 1 -f image2 ${OUT_DIR}/${TIME}-%09d.jpg
+avconv -i "$myStream" -t $myGrabs -r $myFreq -vsync 1 -qscale 1 -f image2 "$2"
 
