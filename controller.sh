@@ -17,13 +17,9 @@ while true; do
   avconv -i $myStream -t 1 -r 1 -vsync 1 -qscale 1 -f image2 ./tmp/${myDate}.bmp
   myImage=./tmp/${myDate}.bmp
   
-  if [ $myProcessor $myImage ]; then
-    myNewState="rolled"
-  else
-    myNewState="unrolled"
-  fi
-  
-  if [ $myOldState="unrolled" && $myNewState="rolled" ]; then
+  myNewState=$($myProcessor $myImage)
+    
+  if [[ $myOldState == "unrolled" && $myNewState == "rolled" ]]; then
     $myAction $myImage
   fi
   
