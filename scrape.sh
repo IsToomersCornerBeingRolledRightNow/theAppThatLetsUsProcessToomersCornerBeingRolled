@@ -6,7 +6,7 @@ OUT_DIR="./images" # no trailing slash
 
 TIME=$(date +%s) # gets the system time in seconds
 
-if [ -d "OUT_DIR" ]; then
+if [ ! -d $OUT_DIR ]; then
 	mkdir $OUT_DIR
 fi
 
