@@ -1,0 +1,27 @@
+-- Initial theAppThatLetsUsProcessToomersCornerBeingRolled.cabal generated 
+-- by cabal init.  For further documentation, see 
+-- http://haskell.org/cabal/users-guide/
+
+name:                theAppThatLetsUsProcessToomersCornerBeingRolled
+version:             0.1.0.0
+-- synopsis:            
+-- description:         
+-- license:             
+license-file:        LICENSE
+author:              Zachary Sarver
+maintainer:          Zachary.Sarver@gmail.com
+-- copyright:           
+-- category:            
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+executable theAppThatLetsUsProcessToomersCornerBeingRolled
+  main-is:             Canny.hs
+  -- other-modules:       
+  other-extensions:    ScopedTypeVariables
+  build-depends:       base >=4.6 && <4.7
+                     , friday >=0.2 && <0.3
+                     , friday-devil >= 0.1 && <0.2
+  -- hs-source-dirs:      
+  default-language:    Haskell2010
