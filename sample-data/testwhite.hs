@@ -23,4 +23,3 @@ main = sh $ do
      else do 
        liftIO $ echo (fromString nofolder)
        inproc "cp" [file,fromString nofolder] yes
-  
