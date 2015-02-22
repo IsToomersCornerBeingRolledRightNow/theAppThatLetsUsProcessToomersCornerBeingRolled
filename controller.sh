@@ -1,73 +1,83 @@
 #!/bin/bash
 
-myStream="rtsp://68.152.51.100/axis-media/media.amp"
-myImage="./tmp/image.bmp"
-myProcessor="./compare.sh"
-myAction="./tweet.rb"
-mySleep="1"
+myStream="rtsp://68.152.51.100/axis-media/media.amp" # video stream
+myImage="./tmp/image.bmp" # path to captured image
+myFfmpeg="avconv" # ubuntu replaced ffmpeg with avconv
+wtfName="theAppThatLetsUsProcessToomersCornerBeingRolled" # wtf
+myProcessor="./dist/build/${wtfName}/${wtfName}" # image processor
+#myProcessor="./testing_processor.sh" #DEBUG
+myTolerance="10" # determines what angles contribute to image score
+myThreshold="26000" # minimum score for inclusion
+#myTweeter="./tweet.rb" # what to do when successful
+myTweeter="./testing_tweeter.sh" #DEBUG
+mySleep="1" # how long to sleep between image captures
+myTweetTimeout="10800" # seconds between allowable tweets
 
-function grab {
-  # $1 is the video stream
-  # $2 is the output file
-
-  if [[ -f $2 ]]; then
-    rm $2
+function grab_image {
+  if [[ -f $myImage ]]; then
+    rm $myImage
   fi
   
-  avconv -i "$1" -t 1 -r 1 -vsync 1 -qscale 1 -f image2 "$2"
+  $myFfmpeg -i $myStream -t 1 -r 1 -vsync 1 -qscale 1 -f image2 $myImage
 }
 
-function process {
-  # $1 is the image processor
-  # $2 is the captured image
-  
-  myResult=$($1 $2)
-  
-  if [[ $myResult -eq 0 ]]; then
-    myReturn="rolled"
-  else
-    myReturn="unrolled"
-  fi
-  
-  echo $myReturn
+function score_image {  
+  score=$($myProcessor $myImage $myTolerance)
+  echo $score
 }
 
-function act {
-  # $1 is the action to be taken
-  # $2 is the captured image
-
-  myOldImage="$2"
-  myNewImage="${myOldImage/%.bmp/.png}"
+function tweet_out {
+  myOldImage=$myImage
+  myNewImage=${myOldImage/%.bmp/.png}
   
   if [[ -f $myNewImage ]]; then
     rm $myNewImage
   fi
   
-  avconv -i $myOldImage $myNewImage
-  $1 $myNewImage
+  $myFfmpeg -i $myOldImage $myNewImage
+  $myTweeter $myNewImage &
 }
 
 function main {
-
-  if [[ -d ./tmp ]]; then
-    rm -rf ./tmp
+  if [[ ! -d ./tmp ]]; then
+    mkdir ./tmp
   fi
-  mkdir ./tmp
-
-  myOldState="unrolled"
-
+  if [[ ! -d ./images ]]; then
+    mkdir ./images
+  fi
+  
+  rollTime="0"
+  state="unrolled"
+  
   while true; do
-    grab $myStream $myImage
-    process $myProcessor $myImage
-    if [[ $myOldState == "unrolled" && $myNewState == "rolled" ]]; then
-      act $myAction $myImage &
+    #echo "rollTime = ${rollTime}" >> ./tmp/testing.log #DEBUG
+    grab_image
+    score=$(score_image)
+    
+    if [[ $score -gt $myThreshold ]]; then
+      state="rolled"
+    else
+      state="unrolled"
     fi
     
-    myOldState=$myNewState
+    timestamp=$(date +%s)
+    #echo "timestamp = ${timestamp}" >> ./tmp/testing.log #DEBUG
+    let timeSinceRolled=timestamp-rollTime
+    #echo "timeSinceRolled = ${timeSinceRolled}" >> ./tmp/testing.log #DEBUG
+    cp $myImage ./images/${timestamp}-${score}-${state}.bmp
+    echo "images saved as ${timestamp}-${score}-${state}.bmp" >> ./tmp/testing.log
+
+    #echo "state = ${state}" >> ./tmp/testing.log #DEBUG
+    if [[ $state == "rolled" ]]; then
+      if [[ $timeSinceRolled -gt $myTweetTimeout ]]; then
+        tweet_out
+      fi
+      rollTime=$timestamp
+    fi
+    
     sleep $mySleep
     rm $myImage
   done
 }
 
 main
-
