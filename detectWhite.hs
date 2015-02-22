@@ -10,7 +10,8 @@ import Vision.Primitive (Z (..), (:.) (..), inShape, ix2)
 
 
 import Data.Maybe (maybeToList)
-import Data.List (filter)
+import Data.List (filter, group, sort, sortBy)
+import Data.Ord (Down (..), comparing)
 --colorHist :: -> []
 
 mask :: Grey -> RGB -> DelayedMask RGBPixel
@@ -56,7 +57,20 @@ main = do
             case io2 of
                  Right (color :: RGB) -> do 
                   let colors = get_colors (mask thresheld color)
-                      good (RGBPixel r g b) = (r > 240) && (g > 240) && (b > 240)
+                      good (RGBPixel r g b) = (r > 150) 
+                        && (g > 150) 
+                        && (b > 150) 
+                        && (abs (r - g) < 35) 
+                        && (abs (r - b) < 35) 
+                        && (abs (g - b) < 35)
+                      tri (RGBPixel r g b) = (r `div` 4,g `div` 4,b `div` 4)
                   print . length . filter good $ colors
+                  {-print . take 20
+                        . sortBy (comparing $ Down . snd)
+                        . fmap (\x -> (head x, length x))
+                        . group
+                        . sort 
+                        . fmap tri
+                        $ colors-}
                   mErr <- save Autodetect output grey
                   return ()

@@ -6,20 +6,21 @@ import Turtle
 import Filesystem.Path.CurrentOS(encodeString)
 import System.Environment (getArgs)
 
-bin = "../dist/build/theAppThatLetsUsProcessToomersCornerBeingRolled/theAppThatLetsUsProcessToomersCornerBeingRolled"
+bin = "../detectWhite"
 tolerance = "10"
 threshold = 28000
 
 main = sh $ do
-  [sourcefolder,yesfolder,nofolder] <- liftIO getArgs
+  [sourcefolder] <- liftIO getArgs
   f <- ls . fromString $ sourcefolder
   let file = case toText f of
               Right g -> g
   score <- inproc bin [file,tolerance] yes
-  if (read . encodeString . fromText $ score) > threshold
+  liftIO $ echo score
+  {-if (read . encodeString . fromText $ score) > threshold
      then do 
        liftIO $ echo (fromString yesfolder)
        inproc "cp" [file,fromString yesfolder] yes
      else do 
        liftIO $ echo (fromString nofolder)
-       inproc "cp" [file,fromString nofolder] yes
+       inproc "cp" [file,fromString nofolder] yes-}
