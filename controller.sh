@@ -5,11 +5,9 @@ myImage="./tmp/image.bmp" # path to captured image
 myFfmpeg="avconv" # ubuntu replaced ffmpeg with avconv
 wtfName="theAppThatLetsUsProcessToomersCornerBeingRolled" # wtf
 myProcessor="./dist/build/${wtfName}/${wtfName}" # image processor
-#myProcessor="./testing_processor.sh" #DEBUG
 myTolerance="10" # determines what angles contribute to image score
 myThreshold="26000" # minimum score for inclusion
-#myTweeter="./tweet.rb" # what to do when successful
-myTweeter="./testing_tweeter.sh" #DEBUG
+myTweeter="./tweet.rb" # what to do when successful
 mySleep="1" # how long to sleep between image captures
 myTweetTimeout="10800" # seconds between allowable tweets
 
