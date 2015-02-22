@@ -1,7 +1,7 @@
 #!/bin/bash
 
 myStream="rtsp://68.152.51.100/axis-media/media.amp" # video stream #PRODUCTION
-myImage="./tmp/image.bmp" # path to captured image
+myImage="tmp/image.jpg" # path to captured image
 myFfmpeg="avconv" # ubuntu replaced ffmpeg with avconv
 wtfName="theAppThatLetsUsProcessToomersCornerBeingRolled" # wtf
 myProcessor="./dist/build/${wtfName}/${wtfName}" # image processor
@@ -11,12 +11,20 @@ myTweeter="ruby tweet.rb" # what to do when successful
 mySleep="1" # how long to sleep between image captures
 myTweetTimeout="10800" # seconds between allowable tweets
 
+scriptStartTime=$(date +%s)
+imagePath="examplevideos/fall-2015/images0000000"
+
 function grab_image {
   if [[ -f $myImage ]]; then
     rm $myImage
   fi
   
-  $myFfmpeg -i "$myStream" -t 1 -r 1 -vsync 1 -qscale 1 -f image2 $myImage
+  grabTime=$(date +%s)
+  let scriptRunTime=grabTime-scriptStartTime+12
+  targetImage="${imagePath}${scriptRunTime}.jpg"
+
+  #echo "cp ${targetImage} ${myImage}"
+  cp $targetImage $myImage
 }
 
 function score_image {  
@@ -25,15 +33,17 @@ function score_image {
 }
 
 function tweet_out {
-  myOldImage=$myImage
-  myNewImage=${myOldImage/%.bmp/.png}
+  #myOldImage=$myImage
+  #myNewImage=${myOldImage/%.bmp/.png}
   
-  if [[ -f $myNewImage ]]; then
-    rm $myNewImage
-  fi
+  #if [[ -f $myNewImage ]]; then
+  #  rm $myNewImage
+  #fi
   
-  $myFfmpeg -i $myOldImage $myNewImage
-  $myTweeter $myNewImage &
+  #$myFfmpeg -i $myOldImage $myNewImage
+  $myTweeter $myImage &
+  echo "WAR DAMN TWEETED!"
+  exit 0
 }
 
 function main {
@@ -50,8 +60,12 @@ function main {
   while true; do
     #echo "rollTime = ${rollTime}" >> ./tmp/testing.log #DEBUG
     grab_image
+    eog $myImage 2> /dev/null &
     score=$(score_image)
-    
+    echo $score
+    sleep 2
+    kill %1
+
     if [[ $score -gt $myThreshold ]]; then
       state="rolled"
     else
@@ -62,7 +76,7 @@ function main {
     #echo "timestamp = ${timestamp}" >> ./tmp/testing.log #DEBUG
     let timeSinceRolled=timestamp-rollTime
     #echo "timeSinceRolled = ${timeSinceRolled}" >> ./tmp/testing.log #DEBUG
-    cp $myImage ./images/${timestamp}-${score}-${state}.bmp
+    #cp $myImage ./images/${timestamp}-${score}-${state}.bmp
     echo "images saved as ${timestamp}-${score}-${state}.bmp" >> ./tmp/testing.log
 
     #echo "state = ${state}" >> ./tmp/testing.log #DEBUG
