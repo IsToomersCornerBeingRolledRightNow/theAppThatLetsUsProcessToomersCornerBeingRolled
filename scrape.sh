@@ -2,7 +2,8 @@
 
 # Continually grabs frames from $STREAM every $FREQ seconds.
 
-STREAM="rtsp://68.152.51.100/axis-media/media.amp" # source stream
+#STREAM="rtsp://68.152.51.100/axis-media/media.amp" # source stream
+STREAM="rtsp://localhost:8554/demo" # local demo
 FREQ="1" # frequency in seconds
 OUT_DIR="./images" # no trailing slash
 
@@ -13,4 +14,3 @@ if [ ! -d $OUT_DIR ]; then
 fi
 
 avconv -i $STREAM -r $FREQ -vsync 1 -qscale 1 -f image2 ${OUT_DIR}/${TIME}-%09d.jpg
-
