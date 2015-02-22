@@ -9,7 +9,7 @@ myTolerance="10" # determines what angles contribute to image score
 myThreshold="26000" # minimum score for inclusion
 myTweeter="./tweet.rb" # what to do when successful
 mySleep="1" # how long to sleep between image captures
-myCooldown="10" # how many consecutive failures it takes to update state
+myCooldownReset="10" # how many consecutive failures it takes to update state
 
 function grab_image {
   if [[ -f $myImage ]]; then
@@ -48,24 +48,20 @@ function main {
     mkdir ./tmp
   fi
   
-  myOldState="unrolled"
   cooldown="0"
   
   while true; do
     grab_image
-    myNewState=$(score_image)
-    if [[ $myOldState == "unrolled" && $myNewState == "rolled" ]]; then
-      tweet_out
-      myOldState="rolled"
-      cooldown=$myCooldown
+    state=$(score_image)
+    if [[ $state == "rolled" ]]; then
+      if [[ $cooldown == "0" ]]; then
+        tweet_out
+      fi
+      cooldown=$myCooldownReset
     fi
     
-    if [[ $myOldState == "rolled" && $myNewState == "unrolled" ]]; then
-      if [[ $cooldown == "0" ]]; then
-        myOldState="unrolled"
-      else
-        let cooldown=cooldown-1
-      fi
+    if [[ $state == "unrolled" && $cooldown -gt "0" ]]; then
+      let cooldown=cooldown-1
     fi
     
     sleep $mySleep
