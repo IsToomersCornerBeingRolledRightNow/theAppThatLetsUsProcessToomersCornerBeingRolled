@@ -28,20 +28,6 @@ data EdgeDirection = NorthSouth         -- ^ |
                    | NorthEastSouthWest -- ^ /
                    | NorthWestSouthEast -- ^ \
 
--- | Detects edges using the Canny's algorithm. Edges are given the value
--- 'maxBound' while non-edges are given the value 'minBound'.
---
--- This implementation doesn't perform any noise erasing (as blurring) before
--- edge detection. Noisy images might need to be pre-processed using a Gaussian
--- blur.
---
--- The bidirectional derivative (gradient magnitude) is computed from @x@ and
--- @y@ derivatives using @sqrt(dx² + dy²)@.
---
--- See <http://en.wikipedia.org/wiki/Canny_edge_detector> for details.
---
--- This function is specialized for 'Grey' images but is declared @INLINABLE@
--- to be further specialized for new image types.
 type Angle = Int
 
 get_angles :: Grey -> [Int]
@@ -71,9 +57,6 @@ square a = a * a
 double :: Integral a => a -> Double
 double = fromIntegral
 
- -- Detects the edge of the image with the Canny's edge detector.
---
--- usage: ./canny input.png output.png
 main :: IO ()
 main = do
     [input, tolerance'] <- getArgs
