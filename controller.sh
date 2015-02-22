@@ -3,11 +3,13 @@
 myStream="rtsp://68.152.51.100/axis-media/media.amp" # video stream
 myImage="./tmp/image.bmp" # path to captured image
 myFfmpeg="avconv" # ubuntu replaced ffmpeg with avconv
-wtfName="theAppThatLetsUsProcessToomersCornerBeingRolled" # wtf
-myProcessor="./dist/build/${wtfName}/${wtfName}" # image processor
+#wtfName="theAppThatLetsUsProcessToomersCornerBeingRolled" # wtf
+#myProcessor="./dist/build/${wtfName}/${wtfName}" # image processor
+myProcessor="./testing_processor.sh" #DEBUG
 myTolerance="10" # determines what angles contribute to image score
 myThreshold="26000" # minimum score for inclusion
 myTweeter="./tweet.rb" # what to do when successful
+myTweeter="./testing_tweeter.sh" #DEBUG
 mySleep="1" # how long to sleep between image captures
 myCooldownReset="10" # how many consecutive failures it takes to update state
 
