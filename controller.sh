@@ -3,15 +3,15 @@
 myStream="rtsp://68.152.51.100/axis-media/media.amp" # video stream
 myImage="./tmp/image.bmp" # path to captured image
 myFfmpeg="avconv" # ubuntu replaced ffmpeg with avconv
-#wtfName="theAppThatLetsUsProcessToomersCornerBeingRolled" # wtf
-#myProcessor="./dist/build/${wtfName}/${wtfName}" # image processor
-myProcessor="./testing_processor.sh" #DEBUG
+wtfName="theAppThatLetsUsProcessToomersCornerBeingRolled" # wtf
+myProcessor="./dist/build/${wtfName}/${wtfName}" # image processor
+#myProcessor="./testing_processor.sh" #DEBUG
 myTolerance="10" # determines what angles contribute to image score
 myThreshold="26000" # minimum score for inclusion
-myTweeter="./tweet.rb" # what to do when successful
+#myTweeter="./tweet.rb" # what to do when successful
 myTweeter="./testing_tweeter.sh" #DEBUG
 mySleep="1" # how long to sleep between image captures
-myCooldownReset="10" # how many consecutive failures it takes to update state
+myTweetTimeout="10800" # seconds between allowable tweets
 
 function grab_image {
   if [[ -f $myImage ]]; then
@@ -23,14 +23,7 @@ function grab_image {
 
 function score_image {  
   score=$($myProcessor $myImage $myTolerance)
-  
-  if [[ $score -gt $myThreshold ]]; then
-    result="rolled"
-  else
-    result="unrolled"
-  fi
-  
-  echo $result
+  echo $score
 }
 
 function tweet_out {
@@ -49,21 +42,37 @@ function main {
   if [[ ! -d ./tmp ]]; then
     mkdir ./tmp
   fi
+  if [[ ! -d ./images ]]; then
+    mkdir ./images
+  fi
   
-  cooldown="0"
+  rollTime="0"
+  state="unrolled"
   
   while true; do
+    #echo "rollTime = ${rollTime}" >> ./tmp/testing.log #DEBUG
     grab_image
-    state=$(score_image)
-    if [[ $state == "rolled" ]]; then
-      if [[ $cooldown == "0" ]]; then
-        tweet_out
-      fi
-      cooldown=$myCooldownReset
+    score=$(score_image)
+    
+    if [[ $score -gt $myThreshold ]]; then
+      state="rolled"
+    else
+      state="unrolled"
     fi
     
-    if [[ $state == "unrolled" && $cooldown -gt "0" ]]; then
-      let cooldown=cooldown-1
+    timestamp=$(date +%s)
+    #echo "timestamp = ${timestamp}" >> ./tmp/testing.log #DEBUG
+    let timeSinceRolled=timestamp-rollTime
+    #echo "timeSinceRolled = ${timeSinceRolled}" >> ./tmp/testing.log #DEBUG
+    cp $myImage ./images/${timestamp}-${score}-${state}.bmp
+    echo "images saved as ${timestamp}-${score}-${state}.bmp" >> ./tmp/testing.log
+
+    #echo "state = ${state}" >> ./tmp/testing.log #DEBUG
+    if [[ $state == "rolled" ]]; then
+      if [[ $timeSinceRolled -gt $myTweetTimeout ]]; then
+        tweet_out
+      fi
+      rollTime=$timestamp
     fi
     
     sleep $mySleep
