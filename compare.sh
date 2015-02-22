@@ -1,12 +1,6 @@
 #!/bin/bash
 
-theFlip=$(($(($RANDOM%10))%2))
+myRandom=$(echo "$RANDOM % 10" | bc)
 
-if [[ $theFlip -eq 0 ]]; then
-  myReturn="rolled"
-else
-  myReturn="unrolled"
-fi
-
-echo $myReturn
+echo $myRandom
 
