@@ -21,7 +21,7 @@ function grab_image {
 function score_image {  
   score=$($myProcessor $myImage $myTolerance)
   
-  if [[ $score -gt $threshold ]]; then
+  if [[ $score -gt $myThreshold ]]; then
     result="rolled"
   else
     result="unrolled"
