@@ -16,7 +16,7 @@ function grab_image {
     rm $myImage
   fi
   
-  $myFfmpeg -i $myStream -t 1 -r 1 -vsync 1 -qscale 1 -f image2 $myImage
+  $myFfmpeg -i "$myStream" -t 1 -r 1 -vsync 1 -qscale 1 -f image2 $myImage
 }
 
 function score_image {  
