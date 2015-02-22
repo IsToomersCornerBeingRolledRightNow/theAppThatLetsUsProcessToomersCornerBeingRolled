@@ -1,66 +1,60 @@
 #!/bin/bash
 
-myStream="rtsp://68.152.51.100/axis-media/media.amp"
-myImage="./tmp/image.bmp"
-myProcessor="./compare.sh"
-myAction="./tweet.rb"
-mySleep="1"
+myStream="rtsp://68.152.51.100/axis-media/media.amp" # video stream
+myImage="./tmp/image.bmp" # captured image
+myFfmpeg="avconv" # ubuntu replaced ffmpeg with avconv
+wtfName="theAppThatLetsUsProcessToomersCornerBeingRolled" # wtf
+myProcessor="./dist/build/${wtfName}/${wtfName}" # image processor
+myTolerance="10" # determines what angles contribute to image score
+myThreshold="26000" # minimum score for inclusion
+myTweeter="./tweet.rb" # what to do when successful
+mySleep="1" # how long to sleep between tests
 
-function grab {
-  # $1 is the video stream
-  # $2 is the output file
-
-  if [[ -f $2 ]]; then
-    rm $2
+function grab_image {
+  if [[ -f $myImage ]]; then
+    rm $myImage
   fi
   
-  avconv -i "$1" -t 1 -r 1 -vsync 1 -qscale 1 -f image2 "$2"
+  $myFfmpeg -i $myStream -t 1 -r 1 -vsync 1 -qscale 1 -f image2 $myImage
 }
 
-function process {
-  # $1 is the image processor
-  # $2 is the captured image
+function score_image {  
+  score=$($myProcessor $myImage $myTolerance)
   
-  myResult=$($1 $2)
-  
-  if [[ $myResult -eq 0 ]]; then
-    myReturn="rolled"
+  if [[ $score -gt $threshold ]]; then
+    result="rolled"
   else
-    myReturn="unrolled"
+    result="unrolled"
   fi
   
-  echo $myReturn
+  echo $result
 }
 
-function act {
-  # $1 is the action to be taken
-  # $2 is the captured image
-
-  myOldImage="$2"
-  myNewImage="${myOldImage/%.bmp/.png}"
+function tweet_out {
+  myOldImage=$myImage
+  myNewImage=${myOldImage/%.bmp/.png}
   
   if [[ -f $myNewImage ]]; then
     rm $myNewImage
   fi
   
-  avconv -i $myOldImage $myNewImage
-  $1 $myNewImage
+  $myFfmpeg -i $myOldImage $myNewImage
+  $myTweeter $myNewImage &
 }
 
 function main {
-
   if [[ -d ./tmp ]]; then
     rm -rf ./tmp
   fi
   mkdir ./tmp
-
+  
   myOldState="unrolled"
-
+  
   while true; do
-    grab $myStream $myImage
-    process $myProcessor $myImage
+    grab_image
+    myNewState=$(score_image)
     if [[ $myOldState == "unrolled" && $myNewState == "rolled" ]]; then
-      act $myAction $myImage &
+      tweet_out
     fi
     
     myOldState=$myNewState
