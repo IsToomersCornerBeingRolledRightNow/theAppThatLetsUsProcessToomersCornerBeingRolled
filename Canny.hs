@@ -53,6 +53,8 @@ get_angles !img = do
         pdy = dy `linearIndex` linearIX
     if (pdx,pdy) == (0,0) then []
                           else return . floor $ 100 * atan1 (double pdx) (double pdy)
+                          -- note we're going pdx/pdy, so we're looking at horizontal
+                          -- stuff
   where 
     size@(Z :. h :. w) = shape img
     dx = sobel 5 DerivativeX img :: Manifest Int16
