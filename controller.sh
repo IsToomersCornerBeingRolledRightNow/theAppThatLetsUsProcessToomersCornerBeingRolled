@@ -1,14 +1,15 @@
 #!/bin/bash
 
 myStream="rtsp://68.152.51.100/axis-media/media.amp" # video stream
-myImage="./tmp/image.bmp" # captured image
+myImage="./tmp/image.bmp" # path to captured image
 myFfmpeg="avconv" # ubuntu replaced ffmpeg with avconv
 wtfName="theAppThatLetsUsProcessToomersCornerBeingRolled" # wtf
 myProcessor="./dist/build/${wtfName}/${wtfName}" # image processor
 myTolerance="10" # determines what angles contribute to image score
 myThreshold="26000" # minimum score for inclusion
 myTweeter="./tweet.rb" # what to do when successful
-mySleep="1" # how long to sleep between tests
+mySleep="1" # how long to sleep between image captures
+myCooldown="10" # how many consecutive failures it takes to update state
 
 function grab_image {
   if [[ -f $myImage ]]; then
@@ -43,25 +44,33 @@ function tweet_out {
 }
 
 function main {
-  if [[ -d ./tmp ]]; then
-    rm -rf ./tmp
+  if [[ ! -d ./tmp ]]; then
+    mkdir ./tmp
   fi
-  mkdir ./tmp
   
   myOldState="unrolled"
+  cooldown="0"
   
   while true; do
     grab_image
     myNewState=$(score_image)
     if [[ $myOldState == "unrolled" && $myNewState == "rolled" ]]; then
       tweet_out
+      myOldState="rolled"
+      cooldown=$myCooldown
     fi
     
-    myOldState=$myNewState
+    if [[ $myOldState == "rolled" && $myNewState == "unrolled" ]]; then
+      if [[ $cooldown == "0" ]]; then
+        myOldState="unrolled"
+      else
+        let cooldown=cooldown-1
+      fi
+    fi
+    
     sleep $mySleep
     rm $myImage
   done
 }
 
 main
-
