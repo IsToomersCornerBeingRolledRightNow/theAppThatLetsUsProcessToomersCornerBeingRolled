@@ -3,12 +3,10 @@
 ## CONFIGURATION
 myStream="rtsp://68.152.51.100/axis-media/media.amp" # video stream
 myFfmpeg="avconv" # ubuntu replaced ffmpeg with avconv
-#myProcessor="./theapp.bin" # image processor
-myProcessor="./testing_processor.sh" #DEBUG
+myProcessor="./theapp.bin" # image processor
 myTolerance="10" # determines what angles contribute to image score
 myThreshold="26000" # minimum score for inclusion
-#myTweeter="ruby tweet.rb" # what to do when successful
-myTweeter="./testing_tweeter.sh" #DEBUG
+myTweeter="ruby tweet.rb" # what to do when successful
 mySleep="1" # how long to sleep between image captures
 myTimeout="10800" # seconds between allowable tweets
 
