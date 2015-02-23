@@ -15,6 +15,3 @@ cabal.config
 theapp.bin
 images
 tmp
-examplevideos
-sample-data
-testing-tools
