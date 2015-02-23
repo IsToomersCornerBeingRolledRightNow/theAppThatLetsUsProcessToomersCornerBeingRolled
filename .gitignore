@@ -1,6 +1,3 @@
-theapp.bin
-images
-tmp
 dist
 cabal-dev
 *.o
@@ -12,4 +9,12 @@ cabal-dev
 .cabal-sandbox/
 cabal.sandbox.config
 cabal.config
+
+# additions made by daniel
 .twitter*
+theapp.bin
+images
+tmp
+examplevideos
+sample-data
+testing-tools
