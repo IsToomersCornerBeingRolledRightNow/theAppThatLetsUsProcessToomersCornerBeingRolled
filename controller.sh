@@ -42,11 +42,11 @@ function main {
     
     ## ARCHIVE THE IMAGE
     timestamp=$(date +%s)
-    let timeSinceRolled=timestamp-rollTime
     cp ./tmp/image.bmp ./images/${timestamp}-${score}-${state}.bmp
     echo "Image saved as ${timestamp}-${score}-${state}.bmp." >> ./tmp/controller.log
     
     ## TO TWEET OR NOT TO TWEET
+    let timeSinceRolled=timestamp-rollTime
     if [[ $state == "rolled" ]]; then
       if [[ $timeSinceRolled -gt $myTimeout ]]; then
         ## WAR DAMN TWEET IT
