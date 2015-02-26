@@ -1,0 +1,33 @@
+# update apt-get
+sudo apt-get update
+
+# get git
+sudo apt-get install git --assume-yes
+
+# c compression library
+sudo apt-get install zlib1g-dev --assume-yes
+
+# haskell/cabal stuff (note cabal-install will be outdated)
+sudo apt-get install ghc cabal-install --assume-yes
+
+# update cabal
+cabal update
+cabal install cabal-install-1.20.0.3
+
+# append cabal binary to $PATH
+export PATH=~/.cabal/bin:$PATH
+
+# libdevil-dev
+sudo apt-get install libdevil-dev --assume-yes
+
+# install friday
+cabal install friday
+
+# master friday-devil is broken, so use our fork
+git clone https://github.com/IsToomersCornerBeingRolledRightNow/friday-devil.git .friday-devil
+cd .friday-devil && git checkout IsToomersCorner-patch-1 && cd ..
+cabal install ./.friday-devil --force-reinstalls
+
+# get the processing app
+git clone https://github.com/IsToomersCornerBeingRolledRightNow/theAppThatLetsUsProcessToomersCornerBeingRolled.git processFeed
+cd processFeed && cabal configure && cabal build && cd
