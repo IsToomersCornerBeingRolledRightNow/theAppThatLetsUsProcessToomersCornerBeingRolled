@@ -13,7 +13,7 @@ while [[ $i -lt $grabs ]]; do
 
   timestamp=$(date +%s) # gets the system time in seconds
 
-  avconv -i $stream -t 1 -r 1 -vsync 1 -qscale 1 -f image2 ./intermitent/${timestamp}-%09d.jpg
+  avconv -i "$stream" -t 1 -r 1 -vsync 1 -qscale 1 -f image2 ./intermitent/${timestamp}-%09d.jpg
   
   let i=i+1
 done

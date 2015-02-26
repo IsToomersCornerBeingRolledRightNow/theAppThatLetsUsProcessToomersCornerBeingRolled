@@ -9,4 +9,4 @@ grabs="10" # number of frames to grab
 
 timestamp=$(date +%s) # gets the system time in seconds
 
-avconv -i $stream -t $grabs  -r $freq -vsync 1 -qscale 1 -f image2 ./persistent/${timestamp}-%09d.jpg
+avconv -i "$stream" -t $grabs  -r $freq -vsync 1 -qscale 1 -f image2 ./persistent/${timestamp}-%09d.jpg
