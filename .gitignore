@@ -15,3 +15,6 @@ cabal.config
 theapp.bin
 images
 tmp
+
+# additions made by steven omg
+.vagrant
