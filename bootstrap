@@ -15,6 +15,8 @@ cabal update
 cabal install cabal-install-1.20.0.3
 
 # append cabal binary to $PATH
+### WARNING: this needs to be added to the users .bashrc
+### otherwise, PATH reverts at the end of the login bash session
 export PATH=~/.cabal/bin:$PATH
 
 # libdevil-dev
