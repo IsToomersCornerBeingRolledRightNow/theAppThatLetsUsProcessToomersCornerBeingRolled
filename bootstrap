@@ -1,14 +1,17 @@
 # update apt-get
-sudo apt-get update
+apt-get update
+
 
 # get git
-sudo apt-get install git --assume-yes
+apt-get install git --assume-yes
+
 
 # c compression library
-sudo apt-get install zlib1g-dev --assume-yes
+apt-get install zlib1g-dev --assume-yes
 
 # haskell/cabal stuff (note cabal-install will be outdated)
-sudo apt-get install ghc cabal-install --assume-yes
+apt-get install ghc cabal-install --assume-yes
+
 
 # update cabal
 cabal update
@@ -16,18 +19,26 @@ cabal install cabal-install-1.20.0.3
 
 # append cabal binary to $PATH
 export PATH=~/.cabal/bin:$PATH
+# note that this is run as sudo, so we must use an absolute path
+echo "export PATH=/home/vagrant/.cabal/bin:\$PATH" >> ~/.bashrc
+
 
 # libdevil-dev
-sudo apt-get install libdevil-dev --assume-yes
+apt-get install libdevil-dev --assume-yes
+
 
 # install friday
 cabal install friday
 
-# master friday-devil is broken, so use our fork
-git clone https://github.com/IsToomersCornerBeingRolledRightNow/friday-devil.git .friday-devil
-cd .friday-devil && git checkout IsToomersCorner-patch-1 && cd ..
-cabal install ./.friday-devil --force-reinstalls
 
-# get the processing app
-git clone https://github.com/IsToomersCornerBeingRolledRightNow/theAppThatLetsUsProcessToomersCornerBeingRolled.git processFeed
-cd processFeed && cabal configure && cabal build && cd
+# clone friday-devil from github
+git clone https://github.com/RaphaelJ/friday-devil.git
+
+# using our pushed github commit since it's not been updated on cabal
+cd friday-devil && git checkout 4723033656a && cd ..
+
+# force reinstalls since bytestring version differs from previous installs
+cabal install ./friday-devil --force-reinstalls
+
+# build the processing app
+cd /vagrant && cabal configure && cabal build
