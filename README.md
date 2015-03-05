@@ -10,4 +10,5 @@ To get a working binary for Ubuntu Trusty 64-bit:
       <http://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying>
       for options
 * congrats it can be found at
-  `~/processApp/dist/build/theAppThatLetsUsProcessToomersCornerBeingRolled/theAppThatLetsUsProcessToomersCornerBeingRolled`
+  `dist/build/theAppThatLetsUsProcessToomersCornerBeingRolled/theAppThatLetsUsProcessToomersCornerBeingRolled`
+  in the project folder on your local machine
