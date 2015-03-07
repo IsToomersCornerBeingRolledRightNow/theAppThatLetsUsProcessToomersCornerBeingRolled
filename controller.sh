@@ -12,7 +12,7 @@ myTimeout="10800" # seconds between allowable tweets
 myCacheTime="10800" # number of seconds an image is kept
 
 function main {
-  startTime=$(date -%s)
+  startTime=$(date +%s)
 
   ## INIT SOME DIRS AND VARS
   if [[ ! -d tmp/ ]]; then
@@ -33,8 +33,9 @@ function main {
   echo "Started logging at $(date)." >> $log
 
   ## START IMAGE SCRAPER
-  $myFfmped -rtsp_transport tcp -y -i "$myStream" -r 1/$mySleep tmp/image%03d.png &
+  $myFfmpeg -rtsp_transport tcp -y -i "$myStream" -r 1/$mySleep tmp/image%03d.png &
   echo "Image scraper $myFfmpeg started at $(date)." >> $log
+  sleep $(expr 3 \* $mySleep)
 
   while true; do
   
