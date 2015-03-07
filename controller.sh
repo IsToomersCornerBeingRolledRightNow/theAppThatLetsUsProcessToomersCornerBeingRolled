@@ -7,60 +7,72 @@ myProcessor="./theapp.bin" # image processor
 myTolerance="10" # determines what angles contribute to image score
 myThreshold="26000" # minimum score for inclusion
 myTweeter="ruby tweet.rb" # what to do when successful
-mySleep="1" # how long to sleep between image captures
+mySleep="60" # how long to sleep between image captures
 myTimeout="10800" # seconds between allowable tweets
+myCacheTime="10800" # number of seconds an image is kept
 
 function main {
-  
-  ## INIT SOME VARS
-  if [[ ! -d ./tmp ]]; then
-    mkdir ./tmp
+  startTime=$(date -%s)
+
+  ## INIT SOME DIRS AND VARS
+  if [[ ! -d tmp/ ]]; then
+    mkdir tmp/
   fi
-  if [[ ! -d ./images ]]; then
-    mkdir ./images
+  if [[ ! -d images/ ]]; then
+    mkdir images/
+  fi
+  if [[ ! -d log/ ]]; then
+    mkdir log/
   fi
   rollTime="0" # last time the tree was rolled (seconds since epoch)
-  state="unrolled" # state of the tree
-  
+  state="unrolled" # state of the corner
+
+  ## START LOGGING
+  log="log/${startTime}.log"
+  echo "Log $log created by controller.sh." >> $log
+  echo "Started logging at $(date)." >> $log
+
+  ## START IMAGE SCRAPER
+  $myFfmped -rtsp_transport tcp -y -i "$myStream" -r 1/$mySleep tmp/image%03d.png &
+  echo "Image scraper $myFfmpeg started at $(date)." >> $log
+
   while true; do
-    
-    ## GRAB AN IMAGE
-    if [[ -f ./tmp/image.bmp ]]; then
-      rm ./tmp/image.bmp
-    fi
-    $myFfmpeg -i "$myStream" -t 1 -r 1 -vsync 1 -qscale 1 -f image2 ./tmp/image.bmp
-    
-    ## SCORE THE IMAGE
-    score=$($myProcessor ./tmp/image.bmp $myTolerance)
+  
+    ## FIND AND SCORE THE LATEST IMAGE
+    friendlyTime=$(date)
+    currentTime=$(date +%s)
+    image=$(ls -1t tmp/* | head -1)
+    score=$($myProcessor $image $myTolerance)
     if [[ $score -gt $myThreshold ]]; then
       state="rolled"
     else
       state="unrolled"
     fi
-    
-    ## ARCHIVE THE IMAGE
-    timestamp=$(date +%s)
-    cp ./tmp/image.bmp ./images/${timestamp}-${score}-${state}.bmp
-    echo "Image saved as ${timestamp}-${score}-${state}.bmp." >> ./tmp/controller.log
-    
+    echo "At time $friendlyTime, image $image scored $score, interpreted as state $state." >> $log
+
     ## TO TWEET OR NOT TO TWEET
-    let timeSinceRolled=timestamp-rollTime
+    let timeout=currentTime-rollTime
     if [[ $state == "rolled" ]]; then
-      if [[ $timeSinceRolled -gt $myTimeout ]]; then
-        ## WAR DAMN TWEET IT
-        if [[ -f ./tmp/image.png ]]; then
-          rm ./tmp/image.png
-        fi
-        $myFfmpeg -i ./tmp/image.bmp ./tmp/image.png # convert to png
-        $myTweeter ./tmp/image.png & # and tweet
-        echo "Tweeted! ${timestamp}-${score}-${state}." >> ./tmp/controller.log
+      if [[ $timeout -gt $myTimeout ]]; then
+        ## IT'S AWAY!
+        $myTweeter $image &
+        echo "Tweeted! $friendlyTime - $image - $score - $state." >> $log
+      else
+        ## NEGATIVE! IT DIDN'T GO IN.
+        echo "Image was $state, but timeout $timeout was too small. Not tweeting." >> $log
       fi
-      rollTime=$timestamp
-      echo "Image passed, timeout reset." >> ./tmp/controller.log
+      ## SOME BOOKKEEPING
+      rollTime=$currentTime
+      echo "Image was $state, so timeout was reset." >> $log
+      cp $image images/${currentTime}-${score}.png
+      echo "Image saved as images/${currentTime}-${score}.png." >> $log
     fi
-    
+
+    ## DELETE FRAMES OLDER THAN myCacheTime AND SLEEP
+    find tmp/ -not -newermt "-$myCacheTime seconds" -delete
     sleep $mySleep
   done
 }
 
 main
+
