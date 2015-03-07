@@ -9,3 +9,6 @@ avconv -i $INPUT_FILE -r 1 -vsync 1 -qscale 1 -f image2 images%09d.jpg
 
 to rename files based on modified date
 for i in *.jpg; do mod_date=$(stat -c "%y" "$i"|sed 's/\..*$//'); cp "$i" "$mod_date".jpg; done
+
+
+avconv -rtsp_transport tcp -y -i "rtsp://68.152.51.100/axis-media/media.amp" -r 1/10 grabs/grab%03d.png
